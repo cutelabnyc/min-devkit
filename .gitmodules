@@ -4,3 +4,6 @@
 [submodule "source/min-lib"]
 	path = source/min-lib
 	url = https://github.com/Cycling74/min-lib.git
+[submodule "source/cute-op"]
+	path = source/cute-op
+	url = https://github.com/cutelabnyc/cute-op.git

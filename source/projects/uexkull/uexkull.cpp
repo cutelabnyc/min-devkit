@@ -4,49 +4,98 @@
 ///	@license	Use of this source code is governed by the MIT License found in the License.md file.
 
 #include "c74_min.h"
+extern "C" {
+#include "cuteop.h"
+}
+
+#define NUM_OSC 10
 
 using namespace c74::min;
 
 
-class phasor : public object<phasor>, public sample_operator<0, 1> {
+class uexkull : public object<uexkull>, public sample_operator<0, 1> {
 private:
-	lib::sync m_oscillator;    // note: must be created prior to any attributes that might set parameters below
+    bank_t bank;
+    float fundamental = 0.0f;
 
 public:
-	MIN_DESCRIPTION {"A non-bandlimited sawtooth oscillator (a phasor~ in MSP parlance)."
-					 "This <a href='https://en.wikipedia.org/wiki/Sawtooth_wave'>sawtooth wave</a>"
-					 "is typically used as a control signal for <a "
-					 "href='https://en.wikipedia.org/wiki/Phase_(waves)'>phase</a> ramping."};
-	MIN_TAGS {"audio, oscillator"};
-	MIN_AUTHOR {"Cycling '74"};
-	MIN_RELATED {"phasor~, saw~"};
+    MIN_DESCRIPTION{
+        "A modular oscillator bank that emphasizes the effects of interference patterns."
+        "Use this to create rich beating patterns, sum and difference tones, and "
+        "sonic diffraction grates when used in spatialized multichannel."
+        "Named after biosemiotician <a href='https://en.wikipedia.org/wiki/Jakob_Johann_von_Uexk%C3%BCll'>Jacob von Uexküll</a>." };
+    MIN_TAGS{ "audio, oscillator, bank" };
+    MIN_AUTHOR{ "CuteLab" };
+    MIN_RELATED{ "oscbank~, cycle~, saw~, poly~" };
 
-	inlet<>  in1 {this, "(number) frequency"};
-	outlet<> out1 {this, "(signal) ramp wave", "signal"};
+    uexkull(){
+        BK_init(&bank, NUM_OSC, samplerate(), 0.0f, SIN);
+        float array[10] = { 100, 250, 370, 420, 590, 630, 745, 882, 910, 1008 };
 
-	argument<number> frequency_arg {this, "frequency", "Initial frequency in hertz.", MIN_ARGUMENT_FUNCTION {frequency = arg;
-}
-}
-;
+        for (int i = 0; i < NUM_OSC; i++) {
+            BK_setFrequencies(&bank, array, NUM_OSC);
+        }
+    };
 
-message<> m_number {this, "number", "Set the frequency in Hz.", MIN_FUNCTION {frequency = args;
-return {};
-}
-}
-;
+    ~uexkull(){
+        BK_destroy(&bank);
+    }
 
-attribute<number> frequency {
-	this, "frequency", 1.0, description {"Frequency in Hz"}, setter {MIN_FUNCTION {m_oscillator.frequency(args[0], samplerate());
-return args;
-}
-}
-}
-;
+    inlet<>  in1{ this, "(float) fundamental" };
+    outlet<> out1{ this, "(signal) summed osc bank", "signal" };
 
-sample operator()() {
-	return m_oscillator();
-}
-}
-;
+    argument<number> frequency_arg{
+        this, "fundamental", "fundamental frequency in hertz.", MIN_ARGUMENT_FUNCTION {
+            frequency = arg;
+        }
+    };
 
-MIN_EXTERNAL(phasor);
+    message<> m_number{
+        this, "float", "Set the fundamental frequency in Hz.", MIN_FUNCTION {
+            frequency = args;
+            return {};
+        }
+    };
+
+    attribute<number> frequency{
+        this, "fundamental", 1.0, description {"Fundamental frequency in Hz"}, setter {
+            MIN_FUNCTION {
+                    fundamental = args[0];
+    // float array[10] = {100, 250, 370, 420, 590, 630, 745, 882, 910, 1008};
+
+    // for (int i = 0; i < NUM_OSC; i++) {
+    //     BK_setFrequencies(&bank, array, NUM_OSC);
+    // }
+
+        return args;
+    }
+}
+    };
+
+    sample operator()() {
+        sample y = 0;
+        for (int i = 0; i < NUM_OSC; i++){
+            y += (sample)BK_process(&bank);
+        }
+        return y;
+    }
+};
+
+// /**
+    //  * _UX_diffractionSeries:
+    //  *
+    //  * This is the bread and butter of Uexkull, the heart and soul.
+    //  */
+    // void _UX_diffractionSeries(double *vector, uint16_t numElements)
+    // {
+    //     vector[0] = fundamental;
+    //     for (int i = 0; i < numElements; i++)
+    //     {
+    //         if (i != 0)
+    //         {
+    //             vector[i] = vector[i - 1] * 2;
+    //         }
+    //     }
+    // }
+
+MIN_EXTERNAL(uexkull);
