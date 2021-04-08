@@ -4,19 +4,35 @@
 ///	@license	Use of this source code is governed by the MIT License found in the License.md file.
 
 #include "c74_min.h"
+#include <stdint.h>
 extern "C" {
 #include "cuteop.h"
 }
 
-#define NUM_OSC 10
-
 using namespace c74::min;
 
+/**
+* _UX_diffractionSeries:
+*
+* This is the bread and butter of Uexkull, the heart and soul.
+*/
+void _UX_diffractionSeries(double *vector, uint16_t numElements)
+{
+    for (int i = 0; i < numElements; i++)
+    {
+        if (i != 0)
+        {
+            vector[i] = vector[i - 1] + (vector[i - 1] * 0.5f);
+        }
+    }
+}
 
 class uexkull : public object<uexkull>, public sample_operator<0, 1> {
 private:
     bank_t bank;
-    float fundamental = 0.0f;
+    t_series series;
+    float _fundamental = 0.0f;
+    const int16_t numOsc = 10;
 
 public:
     MIN_DESCRIPTION{
@@ -29,16 +45,15 @@ public:
     MIN_RELATED{ "oscbank~, cycle~, saw~, poly~" };
 
     uexkull(){
-        BK_init(&bank, NUM_OSC, samplerate(), 0.0f, SIN);
-        float array[10] = { 100, 250, 370, 420, 590, 630, 745, 882, 910, 1008 };
-
-        for (int i = 0; i < NUM_OSC; i++) {
-            BK_setFrequencies(&bank, array, NUM_OSC);
-        }
+        series_init(&series, numOsc, _UX_diffractionSeries);
+        series_process(&series, _fundamental);
+        bank_init(&bank, numOsc, samplerate(), 0.0f, SIN);
+        bank_setFrequencies(&bank, series_getSeries(&series), numOsc);
     };
 
     ~uexkull(){
-        BK_destroy(&bank);
+        bank_destroy(&bank);
+        series_destroy(&series);
     }
 
     inlet<>  in1{ this, "(float) fundamental" };
@@ -46,56 +61,35 @@ public:
 
     argument<number> frequency_arg{
         this, "fundamental", "fundamental frequency in hertz.", MIN_ARGUMENT_FUNCTION {
-            frequency = arg;
+            _fundamental = arg;
         }
     };
 
     message<> m_number{
-        this, "float", "Set the fundamental frequency in Hz.", MIN_FUNCTION {
-            frequency = args;
-            return {};
-        }
-    };
-
-    attribute<number> frequency{
-        this, "fundamental", 1.0, description {"Fundamental frequency in Hz"}, setter {
+        this, "float", "Set the fundamental frequency in Hz.",
             MIN_FUNCTION {
-                    fundamental = args[0];
-    // float array[10] = {100, 250, 370, 420, 590, 630, 745, 882, 910, 1008};
-
-    // for (int i = 0; i < NUM_OSC; i++) {
-    //     BK_setFrequencies(&bank, array, NUM_OSC);
-    // }
-
-        return args;
-    }
-}
+                _fundamental = args[0].a_w.w_float;
+                series_process(&series, _fundamental);
+                bank_setFrequencies(&bank, series_getSeries(&series), numOsc);
+                return {};
+            }
     };
+
+//    attribute<number> fundamental{
+//        this, "fundamental", 1.0, description {"Fundamental frequency in Hz"},
+//        setter {
+//            MIN_FUNCTION {
+//                _fundamental = args[0];
+//                series_process(&series, _fundamental);
+//                bank_setFrequencies(&bank, (float *)series_getSeries(&series), NUM_OSC);
+//                return args;
+//            }
+//        }
+//    };
 
     sample operator()() {
-        sample y = 0;
-        for (int i = 0; i < NUM_OSC; i++){
-            y += (sample)BK_process(&bank);
-        }
-        return y;
+        return (sample)bank_process(&bank);
     }
 };
-
-// /**
-    //  * _UX_diffractionSeries:
-    //  *
-    //  * This is the bread and butter of Uexkull, the heart and soul.
-    //  */
-    // void _UX_diffractionSeries(double *vector, uint16_t numElements)
-    // {
-    //     vector[0] = fundamental;
-    //     for (int i = 0; i < numElements; i++)
-    //     {
-    //         if (i != 0)
-    //         {
-    //             vector[i] = vector[i - 1] * 2;
-    //         }
-    //     }
-    // }
 
 MIN_EXTERNAL(uexkull);

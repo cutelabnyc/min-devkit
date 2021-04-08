@@ -48,11 +48,6 @@
 
 	<attributelist>
 
-		<attribute name='fundamental' get='1' set='1' type='float64' size='1' >
-			<digest>Fundamental frequency in Hz </digest>
-			<description>Fundamental frequency in Hz </description>
-		</attribute>
-
 	</attributelist>
 
 
