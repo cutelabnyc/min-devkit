@@ -5,6 +5,12 @@ enable_testing()
 
 string(REGEX REPLACE "(.*)/" "" THIS_PACKAGE_NAME "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Uncomment if you want to generate compile commands. This is useful for example
+# when working with VSCode, if you want intellisense to be able to leverage
+# your CMake
+# Note: this will only work with Makefile and Ninja generators
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
+
 
 if (${CMAKE_GENERATOR} MATCHES "Xcode")
          if (${XCODE_VERSION} VERSION_LESS 10)

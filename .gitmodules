@@ -4,3 +4,6 @@
 [submodule "source/min-lib"]
 	path = source/min-lib
 	url = https://github.com/Cycling74/min-lib.git
+[submodule "source/pink-trombone"]
+	path = source/pink-trombone
+	url = git@github.com:cutelabnyc/pink-trombone-cpp.git
