@@ -9,7 +9,9 @@
 #include "../../pink-trombone/src/WhiteNoise.hpp"
 #include "../../pink-trombone/src/Biquad.hpp"
 
-class pt_glottis : public signal_routing_base<pt_glottis>, public sample_operator<0, 2> {
+using namespace c74::min;
+
+class pt_glottis : public object<pt_glottis>, public sample_operator<0, 2> {
 private:
 	Glottis *_glottis;
 
@@ -22,14 +24,33 @@ public:
 	MIN_AUTHOR {"CuteLab NYC"};
 	MIN_RELATED {"pt.tract~"};
 
-	// above we inherited from sample_operator<3,1> which means 3 inputs and 1 output for our calculate method
-	// we still need to create the interface for the object though, which includes the assistance strings...
-
 	inlet<>  in1 {this, "(signal) Frequency"};
 	outlet<> out1 {this, "(signal) Modeled Sound", "signal"};
 	outlet<> out2 {this, "(signal) Modeled Noise", "signal"};
 
-	pt_glottis(const atoms& args = {}) {
+	attribute<number, threadsafe::yes> frequency { this, "frequency", 140.0,
+		description {"Target frequency of the modeled glottis"},
+		setter { MIN_FUNCTION {
+			number newFrequency = fmax(1.0, args[0]);
+			if (_glottis)
+				_glottis->setTargetFrequency(newFrequency);
+			return { newFrequency };
+		}}
+	};
+
+	attribute<number, threadsafe::yes> tenseness { this, "tenseness", 0.6,
+		description {"Tenseness of the modeled glottis"},
+		setter { MIN_FUNCTION {
+			if (_glottis)
+				_glottis->setTargetTenseness(args[0]);
+			return args;
+		}}
+	};
+
+	pt_glottis(const atoms& args = {}):
+		_glottis{nullptr},
+		_noise{nullptr}
+	{
 		// For now, just assume a 48k sample rate
 		double sr = 48000;
 		_glottis = new Glottis(sr);
@@ -39,6 +60,9 @@ public:
 		_aspirateBiquad->setGain(1.0);
 		_aspirateBiquad->setQ(0.5);
 		_aspirateBiquad->setFrequency(500);
+
+		_glottis->setTargetFrequency(frequency);
+		_glottis->setTargetTenseness(tenseness);
 	}
 
 	~pt_glottis() {
@@ -46,8 +70,6 @@ public:
 		free(_noise);
 		free(_aspirateBiquad);
 	}
-
-	/// Call operator: process a single sample
 
 	samples<2> operator()() {
 
