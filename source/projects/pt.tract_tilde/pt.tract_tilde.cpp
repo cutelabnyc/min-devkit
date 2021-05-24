@@ -61,7 +61,7 @@ public:
 		free(_fricativeBiquad);
 	}
 
-	void pt_tract::processConstrictions() {
+	void processConstrictions() {
 		sample_t tongueIndex = tongueX * ((sample_t) (_tract->tongueIndexUpperBound() - _tract->tongueIndexLowerBound())) + _tract->tongueIndexLowerBound();
 		sample_t innerTongueControlRadius = 2.05;
 		sample_t outerTongueControlRadius = 3.5;
