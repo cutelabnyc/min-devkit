@@ -4,7 +4,7 @@
 ///	@license	Use of this source code is governed by the MIT License found in the License.md file.
 
 #include "c74_min_unittest.h"     // required unit test header
-// #include "messd_tilde.cpp"
+#include "messd_tilde.cpp"
 
 // Unit tests are written using the Catch framework as described at
 // https://github.com/philsquared/Catch/blob/master/docs/tutorial.md
@@ -19,8 +19,9 @@ SCENARIO("nothing") {
     //	std::chrono::duration<double, std::milli> elapsed = end-start;
     //	std::cout << "Waited " << elapsed.count() << " ms\n";
 
-    GIVEN("An instance of our object") {
+    GIVEN("An instance of messd") {
 
-        // test_wrapper<messd> an_instance;
+        test_wrapper<messd> an_instance;
+        messd&              my_object = an_instance;
     }
 }
