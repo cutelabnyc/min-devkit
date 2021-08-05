@@ -4,3 +4,7 @@
 [submodule "source/min-lib"]
 	path = source/min-lib
 	url = https://github.com/Cycling74/min-lib.git
+[submodule "source/cutesynth"]
+	path = source/cutesynth
+	url = https://github.com/cutelabnyc/cutesynth
+	branch = ch259/module-repos
