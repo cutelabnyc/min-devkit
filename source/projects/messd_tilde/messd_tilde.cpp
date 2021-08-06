@@ -17,6 +17,17 @@ class messdup : public object<messdup>, public sample_operator<1, 4> {
 private:
     lib::sync m_oscillator;    // note: must be created prior to any attributes that might set parameters below
     messd_t messd;
+    
+    uint16_t CLOCK_in;
+    uint16_t CLOCK_out;
+    uint16_t DOWNBEAT_in;
+    uint16_t DOWNBEAT_out;
+    uint16_t SUBDIVISION_in;
+    uint16_t SUBDIVISION_out;
+    uint16_t PHASE_in;
+    uint16_t PHASE_out;
+    bool METRIC_MODULATION_in;
+
 public:
     MIN_DESCRIPTION{ "Mess'd Up, as a Max object" };
     MIN_TAGS{ "time" };
@@ -37,6 +48,16 @@ public:
     attribute<int, threadsafe::no, limit::clamp> trunc{ this, "Measure Truncation", 0, range { 0, 8 } };
     attribute<double, threadsafe::no, limit::wrap> phase{ this, "Phase", 0.0, range { 0.0, 1.0 } };
     attribute<double, threadsafe::no, limit::clamp> tempo{ this, "Tempo", 120, range { 20.0, 400.0 } };
+    
+    messdup()
+    {
+        MS_init(&messd);
+    }
+    
+    ~messdup()
+    {
+        MS_destroy(&messd);
+    }
     
     message<> invert{ this, "invert", "Invert",
         MIN_FUNCTION {
