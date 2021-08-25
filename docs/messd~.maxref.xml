@@ -29,6 +29,26 @@
 
 	<methodlist>
 
+		<method name='phase'>
+			<digest>Phased rhythm </digest>
+			<description>Phased rhythm </description>
+		</method>
+
+		<method name='beats'>
+			<digest>Beats Per Measure </digest>
+			<description>Beats Per Measure </description>
+		</method>
+
+		<method name='subdivision'>
+			<digest>Subdivision Per Measure </digest>
+			<description>Subdivision Per Measure </description>
+		</method>
+
+		<method name='tempo'>
+			<digest>Tempo </digest>
+			<description>Tempo </description>
+		</method>
+
 	</methodlist>
 
 
@@ -43,6 +63,7 @@
 
 	<seealsolist>
 		<seealso name='metro' />
+		<seealso name='phasor~' />
 	</seealsolist>
 
 
