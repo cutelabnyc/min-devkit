@@ -6,66 +6,117 @@
 #include "c74_min.h"
 #include "../shared/signal_routing_objects.h"
 
+#define MESSD_UP 1
+
+extern "C" {
+#include "cutesynth.h"
+}
 using namespace c74::min;
 
-class messd : public object<messd>, public sample_operator<1, 4> {
+#define MESSD_UP 1
+#define NUM_INPUTS 10
+#define NUM_OUTPUTS 4
+#define NUM_ARGS (NUM_INPUTS + NUM_OUTPUTS)
+
+class messdup : public object<messdup>, public sample_operator<1, 4> {
 private:
-    lib::sync m_oscillator;    // note: must be created prior to any attributes that might set parameters below
+    double ins[NUM_INPUTS];
+    double outs[NUM_OUTPUTS];
+    
+    messd_t messd;
 
 public:
-    MIN_DESCRIPTION	{ "Mess'd Up, as a Max object" };
-    MIN_TAGS		{ "time" };
-    MIN_AUTHOR		{ "CuteLab" };
-    MIN_RELATED		{ "metro, phasor~" };
+    MIN_DESCRIPTION{ "Mess'd Up, as a Max object" };
+    MIN_TAGS{ "time" };
+    MIN_AUTHOR{ "CuteLab" };
+    MIN_RELATED{ "metro, phasor~" };
 
-    inlet<>  inlet_1 {this, "(signal) Clock (optional)"};
-	outlet<> out1 {this, "(signal) Tempo-scaled Clock", "signal"};
-    outlet<> out2 {this, "(signal) Downbeats", "signal"};
-    outlet<> out3 {this, "(signal) Multiplied Clock", "signal"};
-    outlet<> out4 {this, "(signal) Phased Clock", "signal"};
-
-    attribute<bool> downbeat_latch { this, "Latch to Downbeat", false };
-    attribute<bool> modulating { this, "Modulating Active", false };
-    attribute<int, threadsafe::no, limit::clamp> scale { this, "Interval Scale", 1, range { 1, 9 } };
-    attribute<int, threadsafe::no, limit::clamp> beats { this, "Beats per Measure", 1, range { 1, 9 } };
-    attribute<int, threadsafe::no, limit::clamp> basis { this, "Power of Two Basis", 0, range { -5, 5} };
-    attribute<int, threadsafe::no, limit::clamp> trunc { this, "Measure Truncation", 0, range { 0, 8 } };
-    attribute<double, threadsafe::no, limit::wrap> phase { this, "Phase", 0.0, range { 0.0, 1.0 } };
-    attribute<double, threadsafe::no, limit::clamp> tempo { this, "Tempo", 120, range { 20.0, 400.0 } };
-
-    message<> invert {this, "invert", "Invert",
+    inlet<>  inlet_1{ this, "(int) Pour les messages" };
+    
+    outlet<> out1{ this, "(signal) Tempo-scaled Clock", "signal" };
+    outlet<> out2{ this, "(signal) Downbeats", "signal" };
+    outlet<> out3{ this, "(signal) Multiplied Clock", "signal" };
+    outlet<> out4{ this, "(signal) Phased Clock", "signal" };
+    
+    messdup()
+    {
+        MS_init(&messd);
+        ins[TEMPO_KNOB] = 0;
+        ins[DOWNBEAT_IN] = 0;
+        ins[SUBDIVISION_IN] = 0;
+        ins[PHASE_IN] = 0;
+        ins[INVERT] = 0;
+        ins[METRIC_MODULATION] = 0;
+        ins[PULSE_WIDTH] = 0;
+    }
+    
+    ~messdup()
+    {
+        MS_destroy(&messd);
+    }
+    
+    message<> tempo { this, "tempo", "Tempo",
         MIN_FUNCTION {
-            cout << "invert" << endl;
-            return args;
+            ins[TEMPO_KNOB] = args[0];
+            return {};
         }
     };
 
-    message<> store {this, "store", "Store",
+    message<> beats { this, "beats", "Beats Per Measure",
         MIN_FUNCTION {
-            cout << "store" << endl;
-            return args;
+            ins[DOWNBEAT_IN] = args[0];
+            return {};
         }
     };
 
-    message<> recall {this, "recall", "Recall",
+    message<> subdivision { this, "subdivision", "Subdivision Per Measure",
         MIN_FUNCTION {
-            cout << "recall" << endl;
-            return args;
+            ins[SUBDIVISION_IN] = args[0];
+            return {};
         }
     };
 
-    message<> reset {this, "reset", "Reset",
+    message<> phase { this, "phase", "Phased rhythm",
         MIN_FUNCTION {
-            cout << "reset" << endl;
-            return args;
+            ins[PHASE_IN] = args[0];
+            return {};
         }
     };
+    
+    message<> truncate { this, "truncate", "Truncate rhythm",
+        MIN_FUNCTION {
+            ins[TRUNCATE] = args[0];
+            return {};
+        }
+    };
+    
+    message<> invert { this, "invert", "Invert the subdivision",
+        MIN_FUNCTION {
+            ins[INVERT] = args[0];
+            return {};
+        }
+    };
+    
+    message<> modulate { this, "modulate", "Metric modulationm",
+        MIN_FUNCTION {
+            ins[METRIC_MODULATION] = args[0];
+            return {};
+        }
+    };
+    
+    message<> pulsewidth { this, "pulsewidth", "Pulse Width",
+        MIN_FUNCTION {
+            ins[PULSE_WIDTH] = args[0];
+            return {};
+        }
+    };
+    
 
-	samples<4> operator()(sample in1) {
-        m_oscillator.frequency(tempo / 60.0, samplerate());
-        double op = m_oscillator();
-        return { op, op, op, op };
-	}
+
+    samples<4> operator()(sample in){
+        MS_process(&messd, ins, outs);
+        return { outs[0], outs[1], outs[2], outs[3] };
+    }
 };
 
-MIN_EXTERNAL(messd);
+MIN_EXTERNAL(messdup);

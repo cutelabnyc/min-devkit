@@ -29,6 +29,46 @@
 
 	<methodlist>
 
+		<method name='pulsewidth'>
+			<digest>Pulse Width </digest>
+			<description>Pulse Width </description>
+		</method>
+
+		<method name='modulate'>
+			<digest>Metric modulationm </digest>
+			<description>Metric modulationm </description>
+		</method>
+
+		<method name='invert'>
+			<digest>Invert the subdivision </digest>
+			<description>Invert the subdivision </description>
+		</method>
+
+		<method name='phase'>
+			<digest>Phased rhythm </digest>
+			<description>Phased rhythm </description>
+		</method>
+
+		<method name='beats'>
+			<digest>Beats Per Measure </digest>
+			<description>Beats Per Measure </description>
+		</method>
+
+		<method name='truncate'>
+			<digest>Truncate rhythm </digest>
+			<description>Truncate rhythm </description>
+		</method>
+
+		<method name='subdivision'>
+			<digest>Subdivision Per Measure </digest>
+			<description>Subdivision Per Measure </description>
+		</method>
+
+		<method name='tempo'>
+			<digest>Tempo </digest>
+			<description>Tempo </description>
+		</method>
+
 	</methodlist>
 
 
@@ -43,6 +83,7 @@
 
 	<seealsolist>
 		<seealso name='metro' />
+		<seealso name='phasor~' />
 	</seealsolist>
 
 
