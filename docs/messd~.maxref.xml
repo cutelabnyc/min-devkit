@@ -29,6 +29,11 @@
 
 	<methodlist>
 
+		<method name='latch'>
+			<digest>Latch to Downbeat </digest>
+			<description>Latch to Downbeat </description>
+		</method>
+
 		<method name='pulsewidth'>
 			<digest>Pulse Width </digest>
 			<description>Pulse Width </description>
@@ -44,6 +49,11 @@
 			<description>Invert the subdivision </description>
 		</method>
 
+		<method name='wrap'>
+			<digest>Wrap rhythm </digest>
+			<description>Wrap rhythm </description>
+		</method>
+
 		<method name='phase'>
 			<digest>Phased rhythm </digest>
 			<description>Phased rhythm </description>
@@ -52,11 +62,6 @@
 		<method name='beats'>
 			<digest>Beats Per Measure </digest>
 			<description>Beats Per Measure </description>
-		</method>
-
-		<method name='truncate'>
-			<digest>Truncate rhythm </digest>
-			<description>Truncate rhythm </description>
 		</method>
 
 		<method name='subdivision'>
