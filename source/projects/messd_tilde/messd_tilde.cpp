@@ -13,17 +13,20 @@ extern "C" {
 }
 using namespace c74::min;
 
-#define MESSD_UP 1
-#define NUM_INPUTS 10
-#define NUM_OUTPUTS 4
-#define NUM_ARGS (NUM_INPUTS + NUM_OUTPUTS)
+static void _scale_messdUp(messd_ins_t *ins)
+{
+    ins->tempo = (ins->tempo > 0 ? ins->tempo : 1);
+    ins->beatsPerMeasure = (ins->beatsPerMeasure > 0 ? ins->beatsPerMeasure : 1);
+    ins->subdivisionsPerMeasure = (ins->subdivisionsPerMeasure > 0 ? ins->subdivisionsPerMeasure : 1);
+    ins->phase = (ins->phase <= 1 && ins->phase >= 0 ? ins->phase : 0);
+    ins->pulseWidth = (ins->pulseWidth < 1 && ins->pulseWidth > 0 ? ins->pulseWidth : 0.5);
+}
 
 class messdup : public object<messdup>, public sample_operator<1, 4> {
 private:
-    double ins[NUM_INPUTS];
-    double outs[NUM_OUTPUTS];
-    
     messd_t messd;
+    messd_ins_t messd_ins;
+    messd_outs_t messd_outs;
 
 public:
     MIN_DESCRIPTION{ "Mess'd Up, as a Max object" };
@@ -32,90 +35,91 @@ public:
     MIN_RELATED{ "metro, phasor~" };
 
     inlet<>  inlet_1{ this, "(int) Pour les messages" };
-    
+
     outlet<> out1{ this, "(signal) Tempo-scaled Clock", "signal" };
     outlet<> out2{ this, "(signal) Downbeats", "signal" };
     outlet<> out3{ this, "(signal) Multiplied Clock", "signal" };
     outlet<> out4{ this, "(signal) Phased Clock", "signal" };
-    
+
     messdup()
     {
         MS_init(&messd);
-        ins[TEMPO_KNOB] = 0;
-        ins[DOWNBEAT_IN] = 0;
-        ins[SUBDIVISION_IN] = 0;
-        ins[PHASE_IN] = 0;
-        ins[INVERT] = 0;
-        ins[METRIC_MODULATION] = 0;
-        ins[PULSE_WIDTH] = 0;
     }
-    
+
     ~messdup()
     {
         MS_destroy(&messd);
     }
-    
-    message<> tempo { this, "tempo", "Tempo",
+
+    message<> tempo{ this, "tempo", "Tempo",
         MIN_FUNCTION {
-            ins[TEMPO_KNOB] = args[0];
+            messd_ins.tempo = args[0];
             return {};
         }
     };
 
-    message<> beats { this, "beats", "Beats Per Measure",
+    message<> beats{ this, "beats", "Beats Per Measure",
         MIN_FUNCTION {
-            ins[DOWNBEAT_IN] = args[0];
+            messd_ins.beatsPerMeasure = args[0].a_w.w_long;
             return {};
         }
     };
 
-    message<> subdivision { this, "subdivision", "Subdivision Per Measure",
+    message<> subdivision{ this, "subdivision", "Subdivision Per Measure",
         MIN_FUNCTION {
-            ins[SUBDIVISION_IN] = args[0];
+            messd_ins.subdivisionsPerMeasure = args[0].a_w.w_long;
             return {};
         }
     };
 
-    message<> phase { this, "phase", "Phased rhythm",
+    message<> phase{ this, "phase", "Phased rhythm",
         MIN_FUNCTION {
-            ins[PHASE_IN] = args[0];
+            messd_ins.phase = args[0];
+            return {};
+        }
+    };
+
+    message<> wrap{ this, "wrap", "Wrap rhythm",
+        MIN_FUNCTION {
+            messd_ins.wrap = args[0].a_w.w_long;
+            return {};
+        }
+    };
+
+    message<> invert{ this, "invert", "Invert the subdivision",
+        MIN_FUNCTION {
+            messd_ins.invert = args[0];
+            return {};
+        }
+    };
+
+    message<> modulate{ this, "modulate", "Metric modulationm",
+        MIN_FUNCTION {
+            messd_ins.metricModulation = args[0];
+            return {};
+        }
+    };
+
+    message<> pulsewidth{ this, "pulsewidth", "Pulse Width",
+        MIN_FUNCTION {
+            messd_ins.pulseWidth = args[0];
             return {};
         }
     };
     
-    message<> truncate { this, "truncate", "Truncate rhythm",
+    message<> latch{ this, "latch", "Latch to Downbeat",
         MIN_FUNCTION {
-            ins[TRUNCATE] = args[0];
+            messd_ins.latchToDownbeat = args[0];
             return {};
         }
     };
-    
-    message<> invert { this, "invert", "Invert the subdivision",
-        MIN_FUNCTION {
-            ins[INVERT] = args[0];
-            return {};
-        }
-    };
-    
-    message<> modulate { this, "modulate", "Metric modulationm",
-        MIN_FUNCTION {
-            ins[METRIC_MODULATION] = args[0];
-            return {};
-        }
-    };
-    
-    message<> pulsewidth { this, "pulsewidth", "Pulse Width",
-        MIN_FUNCTION {
-            ins[PULSE_WIDTH] = args[0];
-            return {};
-        }
-    };
-    
 
 
     samples<4> operator()(sample in){
-        MS_process(&messd, ins, outs);
-        return { outs[0], outs[1], outs[2], outs[3] };
+        messd_ins.delta = 1000.0 / samplerate();
+        _scale_messdUp(&messd_ins);
+        MS_process(&messd, &messd_ins, &messd_outs);
+        return { (double)messd_outs.downbeat, (double)messd_outs.beat, (double)messd_outs.subdivision, (double)messd_outs.phase };
     }
 };
 
