@@ -40,22 +40,6 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
-					"fontface" : 0,
-					"fontname" : "Arial",
-					"fontsize" : 12.0,
-					"id" : "obj-20",
-					"maxclass" : "number~",
-					"mode" : 2,
-					"numinlets" : 2,
-					"numoutlets" : 2,
-					"outlettype" : [ "signal", "float" ],
-					"patching_rect" : [ 506.0, 425.0, 56.0, 22.0 ],
-					"sig" : 0.0
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"fontname" : "Consolas",
 					"fontsize" : 24.0,
 					"id" : "obj-49",
@@ -64,7 +48,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 653.333333333333485, 297.0, 172.0, 126.0 ],
-					"text" : "To-Do:\nLatch\nInvert\nTruncate\nBPM"
+					"text" : "To-Do:\nInvert\nWrap\nModulate\nExt. clock"
 				}
 
 			}
@@ -109,8 +93,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 279.000000000000114, 389.0, 69.0, 22.0 ],
-					"text" : "truncate $1"
+					"patching_rect" : [ 279.000000000000114, 389.0, 51.0, 22.0 ],
+					"text" : "wrap $1"
 				}
 
 			}
@@ -626,16 +610,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-20", 0 ],
-					"order" : 0,
-					"source" : [ "obj-2", 3 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-31", 0 ],
-					"order" : 1,
 					"source" : [ "obj-2", 3 ]
 				}
 
