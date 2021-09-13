@@ -29,6 +29,11 @@
 
 	<methodlist>
 
+		<method name='roundtrip'>
+			<digest>Round Trip v.s</digest>
+			<description>Round Trip v.s. One Way </description>
+		</method>
+
 		<method name='latch'>
 			<digest>Latch to Downbeat </digest>
 			<description>Latch to Downbeat </description>
@@ -47,6 +52,11 @@
 		<method name='invert'>
 			<digest>Invert the subdivision </digest>
 			<description>Invert the subdivision </description>
+		</method>
+
+		<method name='reset'>
+			<digest>Reset tempo scale </digest>
+			<description>Reset tempo scale </description>
 		</method>
 
 		<method name='wrap'>
