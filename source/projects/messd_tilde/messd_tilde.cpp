@@ -113,6 +113,20 @@ public:
             return {};
         }
     };
+    
+    message<> roundtrip{ this, "roundtrip", "Round Trip v.s. One Way",
+        MIN_FUNCTION {
+            messd_ins.isRoundTrip = args[0];
+            return {};
+        }
+    };
+    
+    message<> reset{ this, "reset", "Reset tempo scale",
+        MIN_FUNCTION {
+            messd_ins.reset = args[0];
+            return {};
+        }
+    };
 
 
     samples<4> operator()(sample in){
