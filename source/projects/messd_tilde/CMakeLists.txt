@@ -30,17 +30,18 @@ add_library(
 	${SOURCE_FILES}
 )
 
-
-include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
-
 #############################################################
 # CUTESYNTH EXTERNAL
 #############################################################
+
 target_link_libraries(${PROJECT_NAME} PUBLIC cutesynth)
 
+include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
 
 #############################################################
 # UNIT TEST
 #############################################################
 
 include(${C74_MIN_API_DIR}/test/min-object-unittest.cmake)
+
+target_link_libraries(${TEST_NAME} PUBLIC cutesynth)

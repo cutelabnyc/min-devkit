@@ -21,7 +21,7 @@ SCENARIO("nothing") {
 
     GIVEN("An instance of messd") {
 
-        test_wrapper<messd> an_instance;
-        messd&              my_object = an_instance;
+        test_wrapper<messdup> an_instance;
+        messdup&              my_object = an_instance;
     }
 }
