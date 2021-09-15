@@ -27,6 +27,8 @@ private:
     messd_t messd;
     messd_ins_t messd_ins;
     messd_outs_t messd_outs;
+	float lastClockIn = 0;
+	int measuredClockWavelength = 0;
 
 public:
     MIN_DESCRIPTION{ "Mess'd Up, as a Max object" };
@@ -34,7 +36,8 @@ public:
     MIN_AUTHOR{ "CuteLab" };
     MIN_RELATED{ "metro, phasor~" };
 
-    inlet<>  inlet_1{ this, "(int) Pour les messages" };
+    inlet<>  inlet_clock{ this, "(signal) External clock", "signal"};
+    inlet<>  inlet_mess{ this, "(int) Pour les messages" };
 
     outlet<> out1{ this, "(signal) Tempo-scaled Clock", "signal" };
     outlet<> out2{ this, "(signal) Downbeats", "signal" };
@@ -131,9 +134,20 @@ public:
 
     samples<4> operator()(sample in){
         messd_ins.delta = 1000.0 / samplerate();
+        messd_ins.ext_clock = in;
+
+		if (lastClockIn > in) {
+			float forcedHint = 1.0 / (fmax(fmin(measuredClockWavelength, samplerate()), samplerate() / 1000.0));
+			MS_clock_wavelength_hint(&messd, forcedHint);
+			measuredClockWavelength = 0;
+		} else {
+			measuredClockWavelength++;
+		}
+		lastClockIn = in;
+
         _scale_messdUp(&messd_ins);
         MS_process(&messd, &messd_ins, &messd_outs);
-        return { (double)messd_outs.downbeat, (double)messd_outs.beat, (double)messd_outs.subdivision, (double)messd_outs.phase };
+        return { (double)messd_outs.downbeat, (double)messd_outs.beat, (double)messd_outs.subdivision, (double)messd_outs.test_out };
     }
 };
 
