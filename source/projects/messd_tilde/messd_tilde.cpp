@@ -43,6 +43,7 @@ public:
     outlet<> out2{ this, "(signal) Downbeats", "signal" };
     outlet<> out3{ this, "(signal) Multiplied Clock", "signal" };
     outlet<> out4{ this, "(signal) Phased Clock", "signal" };
+	outlet<> out5{ this, "UI Sync Messages", "list" };
 
     messdup()
     {
@@ -135,6 +136,7 @@ public:
     samples<4> operator()(sample in){
         messd_ins.delta = 1000.0 / samplerate();
         messd_ins.ext_clock = in;
+		messd_ins.ext_clock_connected = inlet_clock.has_signal_connection();
 
 		if (lastClockIn > in) {
 			float forcedHint = 1.0 / (fmax(fmin(measuredClockWavelength, samplerate()), samplerate() / 1000.0));
@@ -146,8 +148,16 @@ public:
 		lastClockIn = in;
 
         _scale_messdUp(&messd_ins);
+
+		int subdivisionsBeforeProcess = messd_ins.subdivisionsPerMeasure;
         MS_process(&messd, &messd_ins, &messd_outs);
-        return { (double)messd_outs.downbeat, (double)messd_outs.beat, (double)messd_outs.subdivision, (double)messd_outs.test_out };
+
+		// Send messages
+		if (subdivisionsBeforeProcess != messd_ins.subdivisionsPerMeasure) {
+			out5.send("subdivisions", messd_ins.subdivisionsPerMeasure);
+		}
+
+        return { (double)messd_outs.downbeat, (double)messd_outs.beat, (double)messd_outs.subdivision, (double)messd_outs.phase };
     }
 };
 
