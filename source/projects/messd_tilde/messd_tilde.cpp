@@ -9,7 +9,7 @@
 #define MESSD_UP 1
 
 extern "C" {
-#include "cutesynth.h"
+#include "cutemodules.h"
 }
 using namespace c74::min;
 
@@ -37,23 +37,36 @@ public:
     MIN_RELATED{ "metro, phasor~" };
 
     inlet<>  inlet_clock{ this, "(signal) External clock", "signal"};
-    inlet<>  inlet_mess{ this, "(int) Pour les messages" };
 
     outlet<> out1{ this, "(signal) Tempo-scaled Clock", "signal" };
     outlet<> out2{ this, "(signal) Downbeats", "signal" };
     outlet<> out3{ this, "(signal) Multiplied Clock", "signal" };
     outlet<> out4{ this, "(signal) Phased Clock", "signal" };
-	outlet<> out5{ this, "UI Sync Messages", "list" };
+	outlet<thread_check::scheduler, thread_action::fifo> out5{ this, "UI Sync Messages" };
 
     messdup()
     {
         MS_init(&messd);
+        update.delay(0);
     }
 
     ~messdup()
     {
         MS_destroy(&messd);
     }
+
+    timer<> update { this,
+        MIN_FUNCTION {
+            double interval = 250.0;
+
+            out5.send("measured_tempo", messd_outs.measuredTempo);
+            out5.send("scaled_tempo", messd_outs.scaledTempo);
+
+            update.delay(interval);
+
+            return {};
+        }
+    };
 
     message<> tempo{ this, "tempo", "Tempo",
         MIN_FUNCTION {
@@ -111,12 +124,19 @@ public:
         }
     };
     
-    message<> latch{ this, "latch", "Latch to Downbeat",
+    message<> latch_changes{ this, "latch_changes", "Latch Changes to Downbeat",
         MIN_FUNCTION {
-            messd_ins.latchToDownbeat = args[0];
+            messd_ins.latchChangesToDownbeat = args[0];
             return {};
         }
     };
+
+	message<> latch_modulation{ this, "latch_modulation", "Latch Modulation to Downbeat",
+		MIN_FUNCTION {
+			messd_ins.latchModulationToDownbeat = args[0];
+			return {};
+		}
+	};
     
     message<> roundtrip{ this, "roundtrip", "Round Trip v.s. One Way",
         MIN_FUNCTION {
@@ -155,6 +175,9 @@ public:
 		// Send messages
 		if (subdivisionsBeforeProcess != messd_ins.subdivisionsPerMeasure) {
 			out5.send("subdivisions", messd_ins.subdivisionsPerMeasure);
+		}
+		if (messd_outs.modulate) {
+			out5.send("modulate", 1);
 		}
 
         return { (double)messd_outs.downbeat, (double)messd_outs.beat, (double)messd_outs.subdivision, (double)messd_outs.phase };

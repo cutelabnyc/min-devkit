@@ -35,6 +35,7 @@ add_library(
 #############################################################
 
 target_link_libraries(${PROJECT_NAME} PUBLIC cutesynth)
+target_link_libraries(${PROJECT_NAME} PUBLIC cutemodules)
 
 include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
 
@@ -45,3 +46,4 @@ include(${C74_MIN_API_DIR}/script/min-posttarget.cmake)
 include(${C74_MIN_API_DIR}/test/min-object-unittest.cmake)
 
 target_link_libraries(${TEST_NAME} PUBLIC cutesynth)
+target_link_libraries(${TEST_NAME} PUBLIC cutemodules)
