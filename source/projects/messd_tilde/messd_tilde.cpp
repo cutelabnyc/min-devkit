@@ -75,6 +75,13 @@ public:
         }
     };
 
+    message<> trunc{ this, "trunc", "Truncation",
+        MIN_FUNCTION {
+			messd_ins.truncation = args[0].a_w.w_long;
+            return {};
+        }
+    };
+
     message<> beats{ this, "beats", "Beats Per Measure",
         MIN_FUNCTION {
             messd_ins.beatsPerMeasure = args[0].a_w.w_long;
